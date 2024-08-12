@@ -176,7 +176,7 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
 
       elf_ctx_t ctx;
       memset(&ctx, 0, sizeof(elf_ctx_t));
-      if (file_mem) {
+      if (file_mem && memcmp(file_mem, ELFMAG, 4) == 0) {
         elf_ctx_init(&ctx, file_mem);
         result = elf_ctx_iterate_symbol_table(&ctx, symbol_name);
       }
@@ -193,6 +193,9 @@ void *resolve_elf_internal_symbol(const char *library_name, const char *symbol_n
       if (module.load_address) {
         auto mmapFileMng = MmapFileManager(module.path);
         auto file_mem = mmapFileMng.map();
+        if (memcmp(file_mem, ELFMAG, 4) != 0) {
+          continue;
+        }
 
         elf_ctx_t ctx;
         memset(&ctx, 0, sizeof(elf_ctx_t));
